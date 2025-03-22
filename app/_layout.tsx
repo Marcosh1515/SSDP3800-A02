@@ -14,9 +14,9 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="(screens)"
+          name="feck yeah"
           options={{
-            headerShown: false,
+            headerShown: true,
           }}
         />
       </Stack>
