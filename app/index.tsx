@@ -1,6 +1,6 @@
-import { Link } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { FlatList, SafeAreaView, Text, View } from 'react-native';
+import { Link, usePathname } from 'expo-router';
+import React, { StrictMode, useEffect, useState } from 'react';
+import { FlatList, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity } from 'react-native';
 import { Pokemon, PokemonListResponse, Result } from '@/types/pokemon';
 import PokemonCard from '@/components/PokemonCard';
 
@@ -9,7 +9,6 @@ export default function Index() {
   // Get Pokemon details: https://pokeapi.co/api/v2/pokemon/{id or name}
   // Get Pokemon species: https://pokeapi.co/api/v2/pokemon-species/{id}
   const [pokemons, setPokemons] = useState<Result[]>([]);
-  const [pokemon, setPokemon] = useState<Pokemon | null>(null);
 
   useEffect(() => {
     const fetchPokemons = async () => {
@@ -21,42 +20,50 @@ export default function Index() {
         const data: PokemonListResponse = await response.json();
         setPokemons(data.results);
       } catch (error) {
-        console.error('Error fetching Pokemons:', error);
+        console.error('Error fetching Pokémons:', error);
       }
     };
     fetchPokemons();
   }, []);
 
-  async function fetchPokemon(url: string) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Failed to fetch Pokémon');
-      }
-      const data: Pokemon = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching Pokemon:', error);
-    }
-  }
+  const getPokemonId = (url: string) => {
+    const segments = url.split('/');
+    return segments[segments.length - 2];
+  };
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <FlatList
-        data={pokemons}
-        keyExtractor={(pokemon) => pokemon.name}
-        renderItem={({ item }) => (
-          <Link href={`/pokemon/${item.name}`}>
-            <PokemonCard name={item.name} url={item.url} />
-          </Link>
-        )}
-      />
-    </SafeAreaView>
+    <StrictMode>
+      <StatusBar barStyle="dark-content" />
+      <SafeAreaView>
+        <FlatList
+          data={pokemons}
+          scrollEnabled
+          keyExtractor={(pokemon) => pokemon.name}
+          renderItem={({ item }) => {
+            const pokemonId = getPokemonId(item.url);
+            return (
+              <Link
+                href={{
+                  pathname: '/pokemon/[id]',
+                  params: { id: pokemonId },
+                }}
+                asChild
+              >
+                <TouchableOpacity style={styles.pokemonListItem}>
+                  <PokemonCard url={item.url} />
+                </TouchableOpacity>
+              </Link>
+            );
+          }}
+        />
+      </SafeAreaView>
+    </StrictMode>
   );
 }
+
+const styles = StyleSheet.create({
+  pokemonListItem: {
+    marginHorizontal: 16,
+    marginVertical: 4,
+  },
+});

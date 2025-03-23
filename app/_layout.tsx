@@ -9,15 +9,17 @@ export default function RootLayout() {
         <Stack.Screen
           name="index"
           options={{
-            title: 'SSDP3800-A02 Pokedex',
+            title: 'SSDP3800-A02 Pokédex',
             headerShown: true,
           }}
         />
         <Stack.Screen
-          name="feck yeah"
-          options={{
+          name="pokemon/[id]"
+          options={() => ({
+            title: 'Details',
             headerShown: true,
-          }}
+            headerBackTitle: 'Back',
+          })}
         />
       </Stack>
     </>
