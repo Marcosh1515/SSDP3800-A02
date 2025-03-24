@@ -32,11 +32,11 @@ function PokemonCard({ url }: PokemonCardProps) {
         <Image
           style={styles.pokemonImage}
           resizeMode="cover"
-          source={{ uri: pokemon?.sprites.versions?.['generation-i']['red-blue'].front_default || 'https://via.placeholder.com/48' }}
+          source={{ uri: pokemon?.sprites.versions?.['generation-i']['red-blue'].front_default || pokemon?.sprites.front_default }}
         />
       )}
       <View style={styles.pokemonData}>
-        <Text>#{String(pokemon?.id).padStart(3, '0')}</Text>
+        <Text>#{String(pokemon?.id).padStart(5, '0')}</Text>
         <Text>{pokemon?.name[0].toUpperCase().concat(pokemon?.name.substring(1))}</Text>
         <View style={styles.typeTagList}>
           {pokemon?.types.map((type, index) => (

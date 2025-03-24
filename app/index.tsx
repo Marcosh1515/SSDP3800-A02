@@ -1,30 +1,46 @@
-import { Link, usePathname } from 'expo-router';
+import { Link } from 'expo-router';
 import React, { StrictMode, useEffect, useState } from 'react';
 import { FlatList, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity } from 'react-native';
-import { Pokemon, PokemonListResponse, Result } from '@/types/pokemon';
+import { PokemonListResponse, Result } from '@/types/pokemon';
 import PokemonCard from '@/components/PokemonCard';
 
 export default function Index() {
-  // List Pokemon: https://pokeapi.co/api/v2/pokemon?limit=20&offset=0
-  // Get Pokemon details: https://pokeapi.co/api/v2/pokemon/{id or name}
-  // Get Pokemon species: https://pokeapi.co/api/v2/pokemon-species/{id}
   const [pokemons, setPokemons] = useState<Result[]>([]);
+  const [next, setNext] = useState<string>('');
 
   useEffect(() => {
-    const fetchPokemons = async () => {
-      try {
-        const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=20&offset=0');
+    fetchPokemons();
+  }, []);
+
+  const fetchPokemons = async (url = '') => {
+    try {
+      const response = await fetch(url || 'https://pokeapi.co/api/v2/pokemon?limit=20&offset=0');
+      if (!response.ok) {
+        throw new Error('Failed to fetch Pokémon');
+      }
+      const data: PokemonListResponse = await response.json();
+      setPokemons(data.results);
+      setNext(data.next);
+    } catch (error) {
+      console.error('Error fetching Pokémons:', error);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    try {
+      if (pokemons && next) {
+        const response = await fetch(next);
         if (!response.ok) {
           throw new Error('Failed to fetch Pokémon');
         }
-        const data: PokemonListResponse = await response.json();
-        setPokemons(data.results);
-      } catch (error) {
-        console.error('Error fetching Pokémons:', error);
+        const newData: PokemonListResponse = await response.json();
+        setPokemons([...pokemons, ...newData.results]);
+        setNext(newData.next);
       }
-    };
-    fetchPokemons();
-  }, []);
+    } catch (error) {
+      console.error('Error fetching Pokémons:', error);
+    }
+  };
 
   const getPokemonId = (url: string) => {
     const segments = url.split('/');
@@ -39,6 +55,7 @@ export default function Index() {
           data={pokemons}
           scrollEnabled
           keyExtractor={(pokemon) => pokemon.name}
+          onEndReached={() => handleLoadMore()}
           renderItem={({ item }) => {
             const pokemonId = getPokemonId(item.url);
             return (
